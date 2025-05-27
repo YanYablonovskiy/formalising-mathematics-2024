@@ -119,7 +119,8 @@ Delete the `sorry`s and replace them with tactic proofs using `intro`,
 -/
 /-- Every proposition implies itself. -/
 example : P → P := by
-  sorry
+  intros
+  assumption
   done
 
 /-
@@ -138,26 +139,52 @@ So the next level is asking you prove that `P → (Q → P)`.
 
 -/
 example : P → Q → P := by
-  sorry
+  tauto
   done
 
 /-- If we know `P`, and we also know `P → Q`, we can deduce `Q`.
 This is called "Modus Ponens" by logicians. -/
+example : P → (P → Q) → Q :=
+ fun hp ↦ fun hpq ↦ hpq hp
+
 example : P → (P → Q) → Q := by
-  sorry
-  done
+ intro hp hpq
+ exact hpq hp
+
 
 /-- `→` is transitive. That is, if `P → Q` and `Q → R` are true, then
   so is `P → R`. -/
 example : (P → Q) → (Q → R) → P → R := by
-  sorry
+  tauto
   done
+
+example : (P → Q) → (Q → R) → P → R := by
+  intro hpq hqr hp
+  apply hqr
+  · apply hpq
+    · exact hp
+  done
+
+example : (P → Q) → (Q → R) → P → R :=
+ fun hpq: P → Q ↦ fun hqr: Q → R ↦ fun hp: P ↦ hqr (hpq hp)
+
+
 
 -- If `h : P → Q → R` with goal `⊢ R` and you `apply h`, you'll get
 -- two goals! Note that tactics operate on only the first goal.
 example : (P → Q → R) → (P → Q) → P → R := by
-  sorry
+  tauto
   done
+
+example : (P → Q → R) → (P → Q) → P → R := by
+  intros hpqr hpq hpr
+  apply hpqr
+  · assumption
+  · apply hpq
+    · assumption
+
+example : (P → Q → R) → (P → Q) → P → R :=
+ fun hpqr: (P → Q → R) ↦ fun hpq:(P → Q) ↦ fun hp: P ↦ hpqr hp (hpq hp)
 
 /-
 
@@ -171,27 +198,84 @@ in this section, where you'll learn some more tactics.
 variable (S T : Prop)
 
 example : (P → R) → (S → Q) → (R → T) → (Q → R) → S → T := by
-  sorry
+  intro _ hsq hrt hqr hs
+  apply hrt
+  · apply hqr
+    · apply hsq
+      · assumption
+
+example : (P → R) → (S → Q) → (R → T) → (Q → R) → S → T := by
+ tauto
+
+example : (P → R) → (S → Q) → (R → T) → (Q → R) → S → T :=
+ fun _ ↦ fun hsq ↦ fun hrt ↦ fun hqr ↦ fun hs ↦ hrt (hqr (hsq hs))
+
+
+example : (P → Q) → ((P → Q) → P) → Q := by
+  tauto
   done
 
 example : (P → Q) → ((P → Q) → P) → Q := by
-  sorry
-  done
+ intro hpq hpqp
+ exact hpq (hpqp hpq)
+
+lemma my_contra' {P: Prop} {Q: Prop}: P → Q ↔ ¬Q → ¬P := by tauto
+lemma my_contra {P: Prop} {Q: Prop} (hpq: P → Q): ¬Q → ¬P := by tauto
 
 example : ((P → Q) → R) → ((Q → R) → P) → ((R → P) → Q) → P := by
-  sorry
-  done
+  intro hpqr hqrp hrpq
+  by_cases hr:R
+  · by_cases hq:Q
+    · exact hqrp (fun hq ↦ hr)
+    · have hrnp := my_contra hrpq
+      push_neg at hrnp
+      specialize hrnp hq
+      have := my_contra hqrp
+      specialize this hrnp.2
+      push_neg at this
+      by_contra
+      exact this.2 hr
+  ·   have := my_contra hpqr hr
+      push_neg at this
+      exact this.1
+
+
+
 
 example : ((Q → P) → P) → (Q → R) → (R → P) → P := by
-  sorry
+  intro h1 h2 h3
+  have: Q → P := by
+   intro hq
+   exact h3 (h2 hq)
+  exact h1 this
   done
 
 example : (((P → Q) → Q) → Q) → P → Q := by
-  sorry
+  intro h1 h2
+  by_cases hpq:P → Q
+  · exact hpq h2
+  . push_neg at hpq
+    contrapose! h1
+    constructor
+    · contrapose!
+      exact fun h1 ↦ hpq
+    · exact h1
   done
 
 example :
     (((P → Q → Q) → (P → Q) → Q) → R) →
       ((((P → P) → Q) → P → P → Q) → R) → (((P → P → Q) → (P → P) → Q) → R) → R := by
-  sorry
+  intro h1 h2 h3
+  simp at h1 h2 h3
+  by_cases hp: P
+  · by_cases hq:Q
+    · exact h3 (fun hp ↦ hq)
+    · rw [my_contra' (P:=(P→Q))] at h1
+      push_neg at h1
+      exact h1 (fun _ ↦ ⟨hp,hq⟩)
+  · by_cases hq:Q
+    · exact h1 (fun _ ↦ hq)
+    · rw [my_contra' (P:=Q)] at h2
+      push_neg at h2
+      exact h2 (fun _ ↦ hq)
   done
