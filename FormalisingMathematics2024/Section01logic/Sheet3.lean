@@ -33,45 +33,118 @@ and the following tactics may also be useful:
 variable (P Q R : Prop)
 
 example : ¬True → False := by
-  sorry
+  intro nt
+  exact (nt True.intro)
   done
+
+example : ¬True → False := fun nt ↦ (nt True.intro)
+
 
 example : False → ¬True := by
-  sorry
+  intro hf
+  exfalso
+  trivial
   done
+
+
+example : False → ¬True := fun f ↦ fun _ ↦ f
 
 example : ¬False → True := by
-  sorry
+  intro nf
+  change False → False at nf
+  by_contra hc
+  exact (hc True.intro)
   done
+
+example : ¬False → True :=
+  fun _ ↦
+    match Classical.em True with
+    | Or.inl h1 => h1
+    | Or.inr h2 => False.elim (h2 True.intro)
+
+
+
 
 example : True → ¬False := by
-  sorry
+  intro t
+  change False → False
+  intro f
+  exact f
   done
+
+example : True → ¬False := fun _ ↦ fun f ↦ f
 
 example : False → ¬P := by
-  sorry
+  intro f
+  exfalso
+  trivial
   done
+
+example : False → ¬P := fun f ↦ f.elim
+
 
 example : P → ¬P → False := by
-  sorry
+  intro p np
+  exact np p
   done
+
+example : P → ¬P → False := fun hp ↦ fun nhp ↦ nhp hp
+
 
 example : P → ¬¬P := by
-  sorry
+  intro p
+  change ¬P → False
+  intro np
+  exact np p
   done
+
+example : P → ¬¬P := fun hp ↦ fun np:¬P ↦ np hp
 
 example : (P → Q) → ¬Q → ¬P := by
-  sorry
+  intro hpq hnq hp
+  exact hnq (hpq hp)
   done
+
+
+example : (P → Q) → ¬Q → ¬P := fun hpq nq hp ↦ nq (hpq hp)
+
 
 example : ¬¬False → False := by
-  sorry
+  intro nf
+  by_contra hf
+  apply nf
+  exact hf
   done
+
+example : ¬¬False → False := fun nf ↦ nf (fun f ↦ f)
 
 example : ¬¬P → P := by
-  sorry
+  intro np
+  by_cases hp:P
+  · exact hp
+  · specialize np hp
+    exfalso
+    trivial
   done
 
+example: ¬¬P → P :=
+ fun hnnp ↦
+  match Classical.em P with
+  | Or.inl hp => hp
+  | Or.inr hnp => (hnnp hnp).elim
+
+
+
 example : (¬Q → ¬P) → P → Q := by
-  sorry
+  intro hnqnp hp
+  by_cases hq:Q
+  · exact hq
+  · exfalso
+    exact (hnqnp hq) hp
   done
+
+example : (¬Q → ¬P) → P → Q :=
+ fun hnqnp hp ↦
+   match Classical.em Q with
+   | Or.inl hq => hq
+   | Or.inr hnq => ((hnqnp hnq) hp).elim
