@@ -28,41 +28,84 @@ if you can understand what's going on.
 variable (P Q R : Prop)
 
 example : True := by
-  sorry
+  trivial
   done
+
+--term
+example : True := True.intro
+
 
 example : True → True := by
-  sorry
+  trivial
   done
+
+example : True → True := fun t ↦ t
+
 
 example : False → True := by
-  sorry
+  trivial
   done
+
+example : False → True := fun f ↦ f.elim
+
 
 example : False → False := by
-  sorry
+  trivial
   done
+
+
+example : False → False := fun f ↦ f
+
 
 example : (True → False) → False := by
-  sorry
+  trivial
   done
 
+
+example : (True → False) → False := fun tf ↦ tf True.intro
+
+
+
+
 example : False → P := by
-  sorry
+  intro f
+  exfalso
+  trivial
   done
 
 example : True → False → True → False → True → False := by
-  sorry
+  trivial
   done
+
+example : True → False → True → False → True → False :=
+ fun _ ↦ fun f ↦ fun _ _ _ ↦ f
+
 
 example : P → (P → False) → False := by
-  sorry
+  intro p hpf
+  apply hpf
+  exact p
   done
+
+example : P → (P → False) → False :=
+ fun hp ↦ fun hpf ↦ hpf hp
+
 
 example : (P → False) → P → Q := by
-  sorry
+  intro hpf hp
+  specialize hpf hp
+  trivial
   done
 
+example : (P → False) → P → Q := fun hpf ↦ fun hp ↦ (hpf hp).elim
+
+
+example : (True → False) → P := fun htf ↦ (htf True.intro).elim
+
+
 example : (True → False) → P := by
-  sorry
+  intro htf
+  specialize htf True.intro
+  exfalso
+  exact htf
   done
