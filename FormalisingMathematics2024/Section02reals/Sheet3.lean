@@ -97,19 +97,63 @@ theorem tendsTo_const (c : ℝ) : TendsTo (fun n ↦ c) c :=
 /-- If `a(n)` tends to `t` then `a(n) + c` tends to `t + c` -/
 theorem tendsTo_add_const {a : ℕ → ℝ} {t : ℝ} (c : ℝ) (h : TendsTo a t) :
     TendsTo (fun n => a n + c) (t + c) :=
-  by
-  -- hints: make sure you know the maths proof!
-  -- use `cases` to deconstruct an `exists`
-  -- hypothesis, and `specialize` to specialize
-  -- a `forall` hypothesis to specific values.
-  -- Look up the explanations of these tactics in Part C
-  -- of the course notes.  rw [tendsTo_def] at h ⊢
-  sorry
+    by
+      -- hints: make sure you know the maths proof!
+      -- use `cases` to deconstruct an `exists`
+      -- hypothesis, and `specialize` to specialize
+      -- a `forall` hypothesis to specific values.
+      -- Look up the explanations of these tactics in Part C
+      -- of the course notes.  rw [tendsTo_def] at h ⊢
+      rw [tendsTo_def]
+      intro e he
+      simp
+      rw [tendsTo_def] at h
+      specialize h e he
+      exact h
+
+  #check sub_add
+
+  -- theorem tendsTo_add_const' {a : ℕ → ℝ} {t : ℝ} (c : ℝ) (h : TendsTo a t) :
+  --   TendsTo (fun n => a n + c) (t + c) := fun e he ↦
+  --     have := h e he
+  --     have fn: (∃ B, ∀ (n : ℕ), B ≤ n → |(a n + c) - (t + c)| < e) =
+  --       ∃ B, ∀ (n : ℕ), B ≤ n → |(fun n => a n + c) n - (t + c)| < e := rfl
+  --     have hsimp (n:Nat): (a n + c) - (t + c) = a n - t :=
+  --     sorry
+  --     let g := fun k ↦ ∃ B, ∀ (n : ℕ), B ≤ n → |k| < e
+  --     have fn': (∃ B, ∀ (n : ℕ), B ≤ n → |(a n + c) - (t + c)| < e) = (∃ B, ∀ (n : ℕ), B ≤ n → |a n  - t| < e) :=
+  --      suffices (∃ B, ∀ (n : ℕ), B ≤ n → |(a n + c) - (t + c)| < e) ↔ (∃ B, ∀ (n : ℕ), B ≤ n → |a n  - t| < e) from propext
+  --     Iff.intro
+  --      (fun h:∃ B, ∀ (n : ℕ), B ≤ n → |(a n + c) - (t + c)| < e ↦ h.elim
+  --        (fun B h ↦ congrArg g hsimp)) (sorry)
+  --     suffices ∃ B, ∀ (n : ℕ), B ≤ n → |(fun n => a n + c) n - (t + c)| < e  from sorry
+  --     sorry
+  --     sorry
+
+
+
+
+
+#check abs_sub_comm
 
 -- you're not quite ready for this one yet though.
 /-- If `a(n)` tends to `t` then `-a(n)` tends to `-t`.  -/
 example {a : ℕ → ℝ} {t : ℝ} (ha : TendsTo a t) : TendsTo (fun n => -a n) (-t) := by
-  sorry
+  rw [tendsTo_def] at *
+  intro e he
+  specialize ha e he
+  simp
+  use ha.choose
+  have := ha.choose_spec
+  intro n hn
+  specialize this n hn
+  rw [add_comm]
+  have s1: t + -a n = t - a n := by ring
+  rw [s1]
+  rw [abs_sub_comm]
+  assumption
+
+
 -- Try this one. You don't know enough material to do it yet!
 -- Where do you get stuck? The problem is that I didn't teach you
 -- any "API" for (a.k.a. theorems about) the absolute value function |.|.
