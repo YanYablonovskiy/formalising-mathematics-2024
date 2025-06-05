@@ -41,20 +41,146 @@ see if you can start beginning to guess what various lemmas should be called.
 -/
 
 example (x : ℝ) : |-x| = |x| := by exact?
+
+#check mul_pos_of_neg_of_neg
+#check mul_neg_of_neg_of_pos
+#check neg_eq_neg_one_mul
+#check neg_one_lt_zero
+#check abs_of_nonpos
+#check pow_two
+#check neg_one_sq
+#check le_iff_eq_or_lt
+#check abs_zero
+#check mul_zero
+#check add_pos_of_nonneg_of_pos
+#check neg_neg
+example (x : ℝ) : |-x| = |x| := by exact abs_neg x
+
+
+#check sub_pos_of_lt
+#check sub_neg_of_lt
+#check sub_neg_eq_add
+#check neg_add_eq_sub
+
+
+
+
+example (x : ℝ) : |-x| = |x| := by
+ by_cases h:x>0
+ · rw [neg_eq_neg_one_mul]
+   push_neg at h
+   have := mul_neg_of_neg_of_pos neg_one_lt_zero h
+   rw [abs_of_neg this,neg_eq_neg_one_mul]
+   rw [←mul_assoc,←pow_two,neg_one_sq,one_mul,abs_of_pos h]
+ · rw [neg_eq_neg_one_mul]
+   push_neg at h
+   rw [le_iff_eq_or_lt] at h
+   cases h with
+   | inl h => rw [h,abs_zero,mul_zero,abs_zero]
+   | inr h => have := mul_pos_of_neg_of_neg neg_one_lt_zero h; rw [abs_of_pos this,abs_of_neg h,←neg_eq_neg_one_mul]
+
+example (x : ℝ) : |-x| = |x| := by simp
+
+
+
 -- click where it says "try this" to replace
 -- `exact?` with an "exact" proof
 -- Why do this? Because it's quicker!
 
-example (x y : ℝ) : |x - y| = |y - x| := by exact?
+example (x y : ℝ) : |x - y| = |y - x| := by exact abs_sub_comm x y
+
+--no tactic
+example (x y : ℝ) : |x - y| = |y - x| := abs_sub_comm x y
+
+example (x y : ℝ) : |x - y| = |y - x| := by
+  by_cases h: y > x
+  · have := sub_pos_of_lt h
+    rw [abs_of_pos this]
+    have := sub_neg_of_lt h
+    rw [abs_of_neg this]
+    rw [neg_eq_neg_one_mul,mul_sub]
+    rw [←neg_eq_neg_one_mul,←neg_eq_neg_one_mul,sub_neg_eq_add]
+    rw [add_comm]
+    rfl
+  · push_neg at h
+    rw [le_iff_eq_or_lt] at h
+    match h with
+    | Or.inl h1 => rw [h1]
+    | Or.inr h =>
+      have := sub_pos_of_lt h;
+      rw [abs_of_pos this];
+      have := sub_neg_of_lt h ;
+      rw [abs_of_neg this];
+      rw [neg_eq_neg_one_mul,mul_sub,←neg_eq_neg_one_mul,←neg_eq_neg_one_mul,sub_neg_eq_add];rw [add_comm];rfl
+
+#check max_le
+#check le_max_left
 
 
 -- Hmm. What would a theorem saying "the max is
 -- less-or-equal to something iff something else
 -- be called, according to Lean's naming conventions?"
-example (A B C : ℕ) : max A B ≤ C ↔ A ≤ C ∧ B ≤ C := by exact?
+example (A B C : ℕ) : max A B ≤ C ↔ A ≤ C ∧ B ≤ C := by exact Nat.max_le
+
+example (A B C : ℕ) : max A B ≤ C ↔ A ≤ C ∧ B ≤ C := Nat.max_le
+
+example (A B C : ℕ) : max A B ≤ C ↔ A ≤ C ∧ B ≤ C := by
+ constructor
+ · intro hml
+   constructor
+   · have := le_max_left A B
+     exact this.trans hml
+   · have := le_max_right A B
+     exact this.trans hml
+ · intro hb
+   exact max_le hb.1 hb.2
+
+example (A B C : ℕ) : max A B ≤ C ↔ A ≤ C ∧ B ≤ C :=
+ ⟨fun hml ↦ And.intro ((le_max_left A B).trans hml) ((le_max_right A B).trans hml) ,fun hb ↦ max_le hb.1 hb.2⟩
+
+#check lt_or_gt_of_ne
 
 -- abs of something less than something...
 example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by exact?
+
+example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by exact abs_lt
+
+example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := abs_lt
+
+
+#check lt_of_neg_lt_neg
+#check max_def_lt
+#check lt_of_lt_of_le
+
+
+example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by
+  constructor
+  · intro hxy
+    rw [abs] at hxy
+    constructor
+    <;> rw [max_def_lt] at hxy <;>
+        by_cases h: x < -x
+          <;> simp [h] at hxy
+    · rw [←neg_neg y] at hxy
+      have := lt_of_neg_lt_neg hxy
+      exact this
+    · rw [←neg_neg x,←neg_neg y] at hxy
+      have := lt_of_neg_lt_neg hxy
+      push_neg at h
+      apply lt_of_lt_of_le this h
+    · push_neg at h
+      exact h.trans hxy
+    assumption
+  · intro hlt
+    rw [abs]
+    have := (max_lt (b := -x) (α := ℝ) (hlt.2))
+    have hlt1 := hlt.1
+    rw [←neg_neg x] at hlt1
+    have hlt1' := lt_of_neg_lt_neg hlt1
+    specialize this hlt1'
+    assumption
+
+
 
 example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 2 := by linarith
 
