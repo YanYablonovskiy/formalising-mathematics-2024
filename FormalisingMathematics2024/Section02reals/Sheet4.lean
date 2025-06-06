@@ -181,16 +181,55 @@ example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by
     assumption
 
 
+#check div_eq_inv_mul
+#check inv_eq_one_div
+#check Nat.pos_of_div_pos
+#check div_pos_iff_of_pos_left
+#check one_pos
+#check two_pos
+#check three_pos
+#check mul_pos
+
 
 example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 2 := by linarith
 
+
+
+example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 2 := by
+  rw [div_eq_inv_mul,inv_eq_one_div]
+  have := (div_pos_iff_of_pos_left (α:=ℝ) (b:=2) one_pos).mpr two_pos
+  exact mul_pos this hε
+
+
+
+
+
+
+
 -- or linarith, or guess the name...
+
 example (a b x y : ℝ) (h1 : a < x) (h2 : b < y) : a + b < x + y := by exact?
 
+example (a b x y : ℝ) (h1 : a < x) (h2 : b < y) : a + b < x + y := by exact add_lt_add h1 h2
+
+
+example (a b x y : ℝ) (h1 : a < x) (h2 : b < y) : a + b < x + y := add_lt_add h1 h2
+
 example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 3 := by linarith
+
+example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 3 := by
+  rw [div_eq_inv_mul,inv_eq_one_div]
+  have := (div_pos_iff_of_pos_left (α:=ℝ) (b:=3) one_pos).mpr three_pos
+  exact mul_pos this hε
+
+#check add_lt_add
 
 -- This is too obscure for the library
 example (a b c d x y : ℝ) (h1 : a + c < x) (h2 : b + d < y) : a + b + c + d < x + y := by linarith
 
+example (a b c d x y : ℝ) (h1 : a + c < x) (h2 : b + d < y) : a + b + c + d < x + y := by
+ rw [add_assoc a,add_comm b,←add_assoc]
+ rw [add_assoc]
+ exact add_lt_add h1 h2
 -- note that add_lt_add doesn't work because
 -- ((a+b)+c)+d and (a+c)+(b+d) are not definitionally equal
