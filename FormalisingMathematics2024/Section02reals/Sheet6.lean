@@ -4,8 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author : Kevin Buzzard
 -/
 import Mathlib.Tactic -- imports all the Lean tactics
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.Hofer
+--import Mathlib
 import FormalisingMathematics2024.Solutions.Section02reals.Sheet5 -- import a bunch of previous stuff
-
+#check neg_neg
+--#check mul_lt_of_lt_div
+#check lt_div_iff
 namespace Section2sheet6
 
 open Section2sheet3solutions Section2sheet5solutions
@@ -27,22 +32,70 @@ solving them.
 
 Good luck!
 -/
-/-- If `a(n)` tends to `t` then `37 * a(n)` tends to `37 * t`-/
+-- If `a(n)` tends to `t` then `37 * a(n)` tends to `37 * t`
+
+
+#check abs_mul
+#check abs_of_pos
+
+#synth Field ℝ
+
+
+
+example (a b c:ℝ) (h1:a < b/c) (h2:b>0) (h3:c>0): a*c < b := by exact (lt_div_iff h3).mp h1
+
+#check Real.field.toAddCommGroup
+
 theorem tendsTo_thirtyseven_mul (a : ℕ → ℝ) (t : ℝ) (h : TendsTo a t) :
     TendsTo (fun n ↦ 37 * a n) (37 * t) := by
-  sorry
+    rw [TendsTo] at *
+    intro e he
+    specialize h (e/37) (by linarith)
+    obtain ⟨B,hB⟩ := h
+    use B
+    intro n hBn
+    specialize hB n hBn
+    simp only [←mul_sub,abs_mul]
+    rw [abs_of_pos (a:=37) (by linarith)]
+    linarith
+
+
+#check neg_mul_eq_neg_mul
+
 
 /-- If `a(n)` tends to `t` and `c` is a positive constant then
 `c * a(n)` tends to `c * t`. -/
 theorem tendsTo_pos_const_mul {a : ℕ → ℝ} {t : ℝ} (h : TendsTo a t) {c : ℝ} (hc : 0 < c) :
     TendsTo (fun n ↦ c * a n) (c * t) := by
-  sorry
+    rw [TendsTo] at *
+    intro e he
+    have := pos_div_pow_pos he hc 1
+    simp at this
+    specialize h (e/c) (this)
+    obtain ⟨B,hB⟩ := h
+    use B
+    intro n hBn
+    specialize hB n hBn
+    simp only [←mul_sub,abs_mul]
+    rw [abs_of_pos (a:=c) (by linarith)]
+    rw [mul_comm]
+    apply (lt_div_iff hc).mp hB
+
 
 /-- If `a(n)` tends to `t` and `c` is a negative constant then
 `c * a(n)` tends to `c * t`. -/
 theorem tendsTo_neg_const_mul {a : ℕ → ℝ} {t : ℝ} (h : TendsTo a t) {c : ℝ} (hc : c < 0) :
     TendsTo (fun n ↦ c * a n) (c * t) := by
-  sorry
+  rw [←neg_neg c]
+  have : -c > 0 := by linarith
+  rw [←neg_mul_eq_neg_mul]
+  have nh := tendsTo_pos_const_mul h this
+  have nnh := tendsTo_neg nh
+  conv =>
+   arg 1
+   intro n
+   rw [←neg_mul_eq_neg_mul]
+  assumption
 
 /-- If `a(n)` tends to `t` and `c` is a constant then `c * a(n)` tends
 to `c * t`. -/
@@ -88,3 +141,4 @@ theorem tendsTo_unique (a : ℕ → ℝ) (s t : ℝ) (hs : TendsTo a s) (ht : Te
   sorry
 
 end Section2sheet6
+#check pos_div_pow_pos
