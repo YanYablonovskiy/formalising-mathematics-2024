@@ -46,7 +46,7 @@ open Function
 -- Because of a cunning hack in Lean we can also write `f.Injective` and `f.Surjective`.
 
 -- Our functions will go between these sets, or Types as Lean calls them
-variable (X Y Z : Type)
+variable (X Y Z : Type) (x: X)
 
 -- Let's prove some theorems, each of which are true by definition.
 theorem injective_def (f : X → Y) : Injective f ↔ ∀ a b : X, f a = f b → a = b := by
@@ -63,22 +63,59 @@ theorem surjective_def (f : X → Y) : Surjective f ↔ ∀ b : Y, ∃ a : X, f 
 theorem id_eval (x : X) : id x = x := by
   rfl
 
+
 -- Function composition is `∘` in Lean (find out how to type it by putting your cursor on it).
 -- The *definition* of (g ∘ f) (x) is g(f(x)).
 theorem comp_eval (f : X → Y) (g : Y → Z) (x : X) : (g ∘ f) x = g (f x) := by
   rfl
 
--- Why did we just prove all those theorems with a proof
+-- Why d id we just prove all those theorems with a proof
 -- saying "it's true by definition"? Because now, if we want,
 -- we can `rw` the theorems to replace things by their definitions.
 example : Injective (id : X → X) :=
   by-- you can start with `rw injective_def` if you like,
   -- and later you can `rw id_eval`, although remember that `rw` doesn't
   -- work under binders like `∀`, so use `intro` first.
-  sorry
+  rw [Injective]
+  simp
+
+example : Injective (id : X → X) := by
+  rw [Injective]
+  intro a1 a2
+  rw [id,id]
+  intro eq
+  assumption
+
+example : Injective (id : X → X) := (injective_def X X id).mpr (fun (a:X) (b:X) ↦ fun heq ↦ heq.subst (id_eval X a)  )
+
 
 example : Surjective (id : X → X) := by
-  sorry
+  rw [Surjective]
+  intro b
+  use b
+  rfl
+
+example : Surjective (id : X → X) := (surjective_def X X id).mpr (fun b:X ↦ ⟨b,rfl⟩)
+
+
+example (f : X → Y) (g : Y → Z) (hf : Injective f) (hg : Injective g) : Injective (g ∘ f) := by
+ rw [Injective] at *
+ intro a1 a2
+ rw [comp_eval,comp_eval]
+ intro hceq
+ specialize @hg (f a1) (f a2) hceq
+ exact hf hg
+
+
+example (f : X → Y) (g : Y → Z) (hf : Surjective f) (hg : Surjective g) : Surjective (g ∘ f) := by
+ rw [Surjective]
+ intro b
+ simp only [comp_eval]
+ obtain ⟨binv,geq⟩ := hg b
+ obtain ⟨binvinv,feq⟩ := hf binv
+ use binvinv
+ rw [feq,geq]
+
 
 -- Theorem: if f : X → Y and g : Y → Z are injective,
 -- then so is g ∘ f
@@ -129,10 +166,22 @@ example (f : X → Y) (g : Y → Z) (hf : Surjective f) (hg : Surjective g) : Su
 
 -- This is a question on the IUM (Imperial introduction to proof course) function problem sheet
 example (f : X → Y) (g : Y → Z) : Injective (g ∘ f) → Injective f := by
-  sorry
+  intro hinjgf
+  rw [Injective]
+  intro a1 a2 hfeq
+  have : (g ∘ f) a1 = (g ∘ f) a2 := by rw [comp_eval,comp_eval,hfeq]
+  exact hinjgf this
+
+
 
 -- This is another one
 example (f : X → Y) (g : Y → Z) : Surjective (g ∘ f) → Surjective g := by
-  sorry
+  intro sjgf
+  rw [Surjective] at *
+  intro b
+  specialize sjgf b
+  obtain ⟨a,ha⟩ := sjgf
+  use (f a)
+  assumption
 
 end Section3sheet1
