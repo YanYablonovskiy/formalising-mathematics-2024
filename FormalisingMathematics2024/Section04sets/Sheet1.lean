@@ -79,18 +79,63 @@ Let's prove some theorems.
 
 -/
 
-example : A ⊆ A := by sorry
+example : A ⊆ A := by
+ intro x hxA
+ assumption
 
-example : A ⊆ B → B ⊆ C → A ⊆ C := by sorry
+example : A ⊆ A := fun _ hxA ↦ hxA
 
-example : A ⊆ A ∪ B := by sorry
+example : A ⊆ B → B ⊆ C → A ⊆ C := by
+ intro hab hbc
+ rw [subset_def]
+ intro x hxA
+ exact hbc (hab hxA)
 
-example : A ∩ B ⊆ A := by sorry
 
-example : A ⊆ B → A ⊆ C → A ⊆ B ∩ C := by sorry
+example : A ⊆ B → B ⊆ C → A ⊆ C := fun hab hbc ↦ fun _ hxA ↦ hbc (hab hxA)
 
-example : B ⊆ A → C ⊆ A → B ∪ C ⊆ A := by sorry
+example : A ⊆ A ∪ B := by
+ intro x hxa
+ apply Or.inl hxa
 
-example : A ⊆ B → C ⊆ D → A ∪ C ⊆ B ∪ D := by sorry
 
-example : A ⊆ B → C ⊆ D → A ∩ C ⊆ B ∩ D := by sorry
+example : A ⊆ A ∪ B := fun x hxA ↦ Or.inl hxA
+
+example : A ∩ B ⊆ A := by
+ intro x hxAB
+ exact hxAB.1
+
+example : A ∩ B ⊆ A := fun x hxAB ↦ hxAB.1
+
+example : A ⊆ B → A ⊆ C → A ⊆ B ∩ C := by
+ intro hab hac x hxa
+ constructor
+ · exact hab hxa
+ · exact hac hxa
+
+example : A ⊆ B → A ⊆ C → A ⊆ B ∩ C := fun hab hac _ hxa ↦ ⟨hab hxa,hac hxa⟩
+
+
+example : B ⊆ A → C ⊆ A → B ∪ C ⊆ A := by
+ intro hba hca x hBuC
+ rcases hBuC with (h1|h2)
+ · exact hba h1
+ · exact hca h2
+
+example : B ⊆ A → C ⊆ A → B ∪ C ⊆ A := fun hba hca _ hBuC ↦ hBuC.elim (fun h1 ↦ hba h1) (fun h2 ↦ hca h2)
+
+example : A ⊆ B → C ⊆ D → A ∪ C ⊆ B ∪ D := by
+ intro hab hcd x hAuC
+ rcases hAuC with (ha|hc)
+ · exact Or.inl (hab ha)
+ · exact Or.inr (hcd hc)
+
+example : A ⊆ B → C ⊆ D → A ∪ C ⊆ B ∪ D := fun hab hcd _ hAuC ↦ hAuC.elim (fun ha ↦ Or.inl (hab ha)) (fun hc ↦ Or.inr (hcd hc))
+
+example : A ⊆ B → C ⊆ D → A ∩ C ⊆ B ∩ D := by
+ intro hab hcd x hAnC
+ constructor
+ · exact hab hAnC.1
+ · exact hcd hAnC.2
+
+example : A ⊆ B → C ⊆ D → A ∩ C ⊆ B ∩ D := fun hab hcd _ ⟨hA,hC⟩ ↦ ⟨hab hA,hcd hC⟩
