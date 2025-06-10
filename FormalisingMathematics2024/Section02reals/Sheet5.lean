@@ -25,26 +25,14 @@ theorem tendsTo_neg {a : ℕ → ℝ} {t : ℝ} (ha : TendsTo a t) : TendsTo (fu
   use ha.choose
   intro n h
   have := ha.choose_spec n h
-  rw [abs]
-  rw [abs] at this
-  conv =>
-   lhs
-   lhs
-   simp
   conv =>
    lhs
    rhs
-   rw [←mul_neg_one,sub_mul]
-   rw [←mul_neg_one,←mul_neg_one t]
-   rw [mul_assoc,←pow_two,neg_sq 1,one_pow,mul_one]
-   rw [mul_assoc,←pow_two,neg_sq 1,one_pow,mul_one]
-  conv at this =>
-   lhs
-   rhs
-   rw [←mul_neg_one,sub_mul,mul_neg_one t,mul_neg_one]
-   simp
-  rw [max_comm]
+   rw [←mul_neg_one,←mul_neg_one t,←sub_mul]
+  rw [abs_mul]
+  simp
   exact this
+
 
 
 #check one_pow
