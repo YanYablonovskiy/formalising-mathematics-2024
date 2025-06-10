@@ -3,9 +3,13 @@ Copyright (c) 2022 Kevin Buzzard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Author : Kevin Buzzard
 -/
-import Mathlib.Tactic -- imports all the Lean tactics
+import Mathlib.Tactic
+import Mathlib.Data.Real.Basic
+import Mathlib.Analysis.Hofer
+import Mathlib.Order.Basic
+import Mathlib
+ -- imports all the Lean tactics
 /-
-
 # Figuring out how to use the reals
 
 ## The `exact?` tactic
@@ -69,7 +73,7 @@ example (x : ℝ) : |-x| = |x| := by
  by_cases h:x>0
  · rw [neg_eq_neg_one_mul]
    push_neg at h
-   have := mul_neg_of_neg_of_pos neg_one_lt_zero h
+   have := mul_neg_of_neg_of_pos (α:=ℝ ) neg_one_lt_zero h
    rw [abs_of_neg this,neg_eq_neg_one_mul]
    rw [←mul_assoc,←pow_two,neg_one_sq,one_mul,abs_of_pos h]
  · rw [neg_eq_neg_one_mul]
@@ -150,17 +154,18 @@ example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := abs_lt
 
 #check lt_of_neg_lt_neg
 #check max_def_lt
+#check abs_eq_max_neg
 #check lt_of_lt_of_le
 
 
 example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by
   constructor
   · intro hxy
-    rw [abs] at hxy
+    rw [abs_eq_max_neg] at hxy
     constructor
     <;> rw [max_def_lt] at hxy <;>
         by_cases h: x < -x
-          <;> simp [h] at hxy
+          <;> simp only [h] at hxy
     · rw [←neg_neg y] at hxy
       have := lt_of_neg_lt_neg hxy
       exact this
@@ -183,8 +188,9 @@ example (x y : ℝ) : |x| < y ↔ -y < x ∧ x < y := by
 
 #check div_eq_inv_mul
 #check inv_eq_one_div
-#check Nat.pos_of_div_pos
-#check div_pos_iff_of_pos_left
+--#check Nat.pos_of_div_pos
+--#check div_pos_iff_of_pos_left
+#check div_pos
 #check one_pos
 #check two_pos
 #check three_pos
@@ -197,7 +203,7 @@ example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 2 := by linarith
 
 example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 2 := by
   rw [div_eq_inv_mul,inv_eq_one_div]
-  have := (div_pos_iff_of_pos_left (α:=ℝ) (b:=2) one_pos).mpr two_pos
+  have := div_pos (α:=ℝ) (b:=2) one_pos two_pos
   exact mul_pos this hε
 
 
@@ -219,7 +225,7 @@ example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 3 := by linarith
 
 example (ε : ℝ) (hε : 0 < ε) : 0 < ε / 3 := by
   rw [div_eq_inv_mul,inv_eq_one_div]
-  have := (div_pos_iff_of_pos_left (α:=ℝ) (b:=3) one_pos).mpr three_pos
+  have := div_pos (α:=ℝ) (b:=3) one_pos three_pos
   exact mul_pos this hε
 
 #check add_lt_add
