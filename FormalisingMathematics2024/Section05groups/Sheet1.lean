@@ -51,18 +51,18 @@ example (g : G) : g⁻¹ * g = 1 :=
 -- with the name of the axiom it found. Note also that you can instead *guess*
 -- the names of the axioms. For example what do you think the proof of `1 * a = a` is called?
 example (a b c : G) : a * b * c = a * (b * c) := by
-  sorry
+  rw [mul_assoc]
 
 -- can be found with `library_search` if you didn't know the answer already
 example (a : G) : a * 1 = a := by
-  sorry
+  exact mul_one a
 
 -- Can you guess the last two?
 example (a : G) : 1 * a = a := by
-  sorry
+  exact one_mul a
 
 example (a : G) : a * a⁻¹ = 1 := by
-  sorry
+  exact (mul_inv_eq_one.mpr (Eq.refl a))
 
 -- As well as the axioms, Lean has many other standard facts which are true
 -- in all groups. See if you can prove these from the axioms, or find them
@@ -71,26 +71,70 @@ example (a : G) : a * a⁻¹ = 1 := by
 variable (a b c : G)
 
 example : a⁻¹ * (a * b) = b := by
-  sorry
+  rw [←mul_assoc]
+  rw [inv_mul_eq_one.mpr (Eq.refl a)]
+  rw [one_mul]
+
 
 example : a * (a⁻¹ * b) = b := by
-  sorry
+  rw [←mul_assoc]
+  rw [(mul_inv_eq_one.mpr (Eq.refl a))]
+  rw [one_mul]
+
+#check inv_eq_of_mul_eq_one_left
 
 example {a b c : G} (h1 : b * a = 1) (h2 : a * c = 1) : b = c := by
   -- hint for this one if you're doing it from first principles: `b * (a * c) = (b * a) * c`
-  sorry
+  have hn := h1
+  rw [←h2] at hn
+  have hbinv := inv_eq_of_mul_eq_one_left h1
+  have hcinv := inv_eq_of_mul_eq_one_right h2
+  rw [←hbinv,←hcinv]
+
 
 example : a * b = 1 ↔ a⁻¹ = b := by
-  sorry
+  constructor
+  · intro hab1
+    rw [←(mul_inv_eq_one.mpr (Eq.refl a))] at hab1
+    have: a⁻¹*(a*b) = a⁻¹ * (a * a⁻¹) := by
+     rw [hab1]
+    rw [←mul_assoc] at *
+    rw [(mul_inv_eq_one.mpr (Eq.refl a)),inv_mul_eq_one.mpr (Eq.refl a)] at this
+    rw [mul_one,one_mul] at this
+    exact this.symm
+  · intro hab
+    have: a*a⁻¹ = a*b := by rw [hab]
+    rw [(mul_inv_eq_one.mpr (Eq.refl a))] at this
+    exact this.symm
+
 
 example : (1 : G)⁻¹ = 1 := by
-  sorry
+  have : (1 : G)⁻¹*1 = 1*1⁻¹ := by
+   rw [inv_mul_eq_one.mpr (Eq.refl (1:G)),(mul_inv_eq_one.mpr (Eq.refl (1: G)))]
+  rw [mul_one,(mul_inv_eq_one.mpr (Eq.refl (1: G)))] at this
+  assumption
 
 example : a⁻¹⁻¹ = a := by
-  sorry
+  have: a⁻¹⁻¹ * a⁻¹ * a = a * a⁻¹ * a  := by
+   rw [inv_mul_eq_one.mpr (Eq.refl (a⁻¹:G)),(mul_inv_eq_one.mpr (Eq.refl (a: G)))]
+  rw [mul_assoc,mul_assoc] at *
+  rw [(inv_mul_eq_one.mpr (Eq.refl (a: G)))] at this
+  rw [mul_one,mul_one] at this
+  exact this
+
+#check mul_eq_one_iff_eq_inv
 
 example : (a * b)⁻¹ = b⁻¹ * a⁻¹ := by
-  sorry
+  have: (a * b)⁻¹*(a * b) = b⁻¹ * a⁻¹ * (a * b) := by
+   rw [inv_mul_eq_one.mpr (Eq.refl (a*b:G))]
+   rw [←mul_assoc,mul_assoc b⁻¹,inv_mul_eq_one.mpr (Eq.refl a)]
+   rw [mul_assoc,one_mul]
+   rw [inv_mul_eq_one.mpr (Eq.refl (b:G))]
+  rw [inv_mul_eq_one.mpr (Eq.refl (a*b:G))] at this
+  have := mul_eq_one_iff_eq_inv.mp this.symm
+  exact this.symm
+
+
 
 /-
 
@@ -110,4 +154,14 @@ example : (b⁻¹ * a⁻¹)⁻¹ * 1⁻¹⁻¹ * b⁻¹ * (a⁻¹ * a⁻¹⁻¹�
 
 -- Try this trickier problem: if g^2=1 for all g in G, then G is abelian
 example (h : ∀ g : G, g * g = 1) : ∀ g h : G, g * h = h * g := by
-  sorry
+  intro g1 g2
+  have h1 := h g1
+  have h2 := h g2
+  have h3 := mul_eq_one_iff_eq_inv.mp h1
+  have h4 := mul_eq_one_iff_eq_inv.mp h2
+  have h5 := h (g1*g2)
+  have h6 := mul_eq_one_iff_eq_inv.mp h5
+  have: (g1 * g2)⁻¹ = g2⁻¹ * g1⁻¹ := by group
+  rw [←h3,←h4] at this
+  rw [this] at h6
+  exact h6
