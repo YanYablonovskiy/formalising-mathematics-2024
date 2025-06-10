@@ -53,13 +53,35 @@ first.
 
 -/
 
-theorem mul_left_cancel (h : a * b = a * c) : b = c := by sorry
+theorem mul_left_cancel (h : a * b = a * c) : b = c := by
+ have: a⁻¹*(a*b) = a⁻¹*(a*c) := by
+  rw [h]
+ rw [←mul_assoc,←mul_assoc] at this
+ rw [inv_mul_self,one_mul,one_mul] at this
+ exact this
 
-theorem mul_eq_of_eq_inv_mul (h : b = a⁻¹ * c) : a * b = c := by sorry
+theorem mul_eq_of_eq_inv_mul (h : b = a⁻¹ * c) : a * b = c := by
+  have: b⁻¹ * b = b⁻¹ * a⁻¹ * c := by
+    rw [h]
+    rw [mul_assoc]
+  rw [inv_mul_self] at this
+  have invm: (b⁻¹ * a⁻¹)*(a*b) = 1 := by
+    rw [←mul_assoc,mul_assoc b⁻¹,inv_mul_self]
+    rw [mul_assoc,one_mul,inv_mul_self]
+  rw [←invm] at this
+  exact mul_left_cancel (b⁻¹ * a⁻¹)  (a * b) c this
 
-theorem mul_one (a : G) : a * 1 = a := by sorry
 
-theorem mul_inv_self (a : G) : a * a⁻¹ = 1 := by sorry
+theorem mul_one (a : G) : a * 1 = a := by
+ suffices hc:a⁻¹*(a*1) = a⁻¹*a from mul_left_cancel a⁻¹ (a*1) a hc
+ rw [←mul_assoc,inv_mul_self,one_mul]
+
+
+
+
+theorem mul_inv_self (a : G) : a * a⁻¹ = 1 := by
+ have: a⁻¹ = a⁻¹ * 1 := by rw [mul_one]
+ exact mul_eq_of_eq_inv_mul a a⁻¹ 1 this
 
 end WeakGroup
 
