@@ -42,10 +42,34 @@ variable (X : Type) -- Everything will be a subset of `X`
 
 open Set
 
-example : x ∈ (univ : Set X) := by sorry
+#check x ∈ (∅ : Set X)
 
-example : x ∈ (∅ : Set X) → False := by sorry
+example: ((x ∈ (∅ : Set X)) = (fun z ↦ False) x) := by rfl
 
-example : A ⊆ univ := by sorry
 
-example : ∅ ⊆ A := by sorry
+
+example : x ∈ (univ : Set X) := by
+ rw [univ]
+ exact True.intro
+
+example : x ∈ (univ : Set X) := True.intro
+
+example : x ∈ (∅ : Set X) → False := by
+ intro hx0
+ exact hx0
+
+
+example : x ∈ (∅ : Set X) → False := fun hx0 ↦ hx0
+
+example : A ⊆ univ := by
+ intro x hxA
+ exact True.intro
+
+example : A ⊆ univ := fun x _ ↦ True.intro
+
+
+example : ∅ ⊆ A := by
+ intro x hx0
+ exact False.elim hx0
+
+example : ∅ ⊆ A := fun _ hx0 ↦ False.elim hx0
