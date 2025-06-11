@@ -28,6 +28,12 @@ variable (H : Subgroup G)
 -- Just like subsets, elements of the subgroup `H` are terms `g` of type `G`
 -- satisfying `g ∈ H`.
 
+
+
+example (a b : G) (ha : a ∈ H) (hb : b ∈ H) : a * b ∈ H := Subgroup.mul_mem H ha hb
+
+
+
 example (a b : G) (ha : a ∈ H) (hb : b ∈ H) : a * b ∈ H := by
   exact H.mul_mem ha hb -- I found this with `exact?` and then used dot notation.
 
@@ -35,9 +41,20 @@ example (a b : G) (ha : a ∈ H) (hb : b ∈ H) : a * b ∈ H := by
 
 -- Try this one:
 
+
 example (a b c : G) (ha : a ∈ H) (hb : b ∈ H) (hc : c ∈ H) :
     a * b⁻¹ * 1 * (a * c) ∈ H := by
-  sorry
+      rw [mul_assoc,one_mul]
+      have := Subgroup.inv_mem H hb
+      have := And.intro (H.mul_mem ha this) (H.mul_mem ha hc)
+      exact H.mul_mem this.1 this.2
+
+
+example (a b c : G) (ha : a ∈ H) (hb : b ∈ H) (hc : c ∈ H) :
+    a * b⁻¹ * 1 * (a * c) ∈ H := by
+  -- I built this next line bit by bit
+  refine H.mul_mem (H.mul_mem (H.mul_mem ha ?_) H.one_mem) (H.mul_mem ha hc)
+  exact H.inv_mem hb
 
 /-
 
@@ -67,8 +84,20 @@ example (H K : Subgroup G) (a : G) : a ∈ H ⊓ K ↔ a ∈ H ∧ a ∈ K := by
 
 -- Note that `a ∈ H ⊔ K ↔ a ∈ H ∨ a ∈ K` is not true; only `←` is true.
 -- Take apart the `Or` and use `exact?` to find the relevant lemmas.
+
 example (H K : Subgroup G) (a : G) : a ∈ H ∨ a ∈ K → a ∈ H ⊔ K := by
-  sorry
+ rintro (ha|hk)
+ · exact Subgroup.mem_sup_left ha
+ . exact Subgroup.mem_sup_right hk
+
+
+
+#check Subgroup.mem_sup_left
+
+example (H K : Subgroup G) (a : G) : a ∈ H ∨ a ∈ K → a ∈ H ⊔ K := by
+  rintro (hH | hK)
+  · exact Subgroup.mem_sup_left hH
+  · exact Subgroup.mem_sup_right hK
 
 end Subgroups
 
@@ -93,17 +122,25 @@ variable (φ : G →* H)
 example (a b : G) : φ (a * b) = φ a * φ b :=
   φ.map_mul a b -- this is the term: no `by`
 
+
+
+
+example (a b : G) : φ (a * b⁻¹ * 1) = φ a * (φ b)⁻¹ * 1 := by
+ rw [φ.map_mul,φ.map_mul,φ.map_one,φ.map_inv]
+
+
 example (a b : G) : φ (a * b⁻¹ * 1) = φ a * (φ b)⁻¹ * 1 := by
   -- if `φ.map_mul` means that `φ` preserves multiplication
   -- (and you can rewrite with this) then what do you think
   -- the lemmas that `φ` preserves inverse and one are called?
-  sorry
+  rw [φ.map_mul, φ.map_mul, φ.map_one, φ.map_inv]
 
 -- Group homomorphisms are extensional: if two group homomorphisms
 -- are equal on all inputs the they're the same.
 
 example (φ ψ : G →* H) (h : ∀ g : G, φ g = ψ g) : φ = ψ := by
   -- Use the `ext` tactic.
-  sorry
+  ext a
+  apply h
 
 end Homomorphisms
