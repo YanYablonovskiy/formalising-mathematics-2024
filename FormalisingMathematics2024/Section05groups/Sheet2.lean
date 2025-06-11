@@ -104,22 +104,70 @@ class BadGroup (G : Type) extends One G, Mul G, Inv G : Type where
 
 -- `Bool` is a type with two terms, `Bool.true` and `Bool.false`. See if you can make it into
 -- a bad group which isn't a group!
-instance : One Bool :=
-  ⟨sorry⟩
+instance : One Bool where
+ one := Bool.true
 
-instance : Mul Bool :=
-  ⟨sorry⟩
+def mul':Bool → Bool → Bool
+ | Bool.false,Bool.false => Bool.false
+ | Bool.true,Bool.false => Bool.false
+ | Bool.false,Bool.true => Bool.true
+ | Bool.true,Bool.true => Bool.true
 
-instance : Inv Bool :=
-  ⟨sorry⟩
+
+instance : Mul Bool where
+ mul:= fun a b ↦ a
+
+#check Bool.xor
+
+theorem mul_bool_def: ∀(a b:Bool), a*b =   a  := fun _ _ ↦ rfl
+theorem one_bool_def: (1:Bool) = Bool.true := rfl
+
+def inv_bool: Bool → Bool
+| Bool.true => Bool.true
+| Bool.false => Bool.false
+
+
+instance : Inv Bool where
+ inv := fun _ ↦  Bool.true
+
+theorem inv_bool_def (a: Bool): a⁻¹ = Bool.true := rfl
+
+
+
+
+
+
 
 instance : BadGroup Bool where
-  mul_assoc := sorry
+  mul_assoc := by
+    intro a b c
+    simp only [mul_bool_def]
+      --by_cases hb:b <;> simp [ha,hb]
   -- `decide`, might be able to do this
-  mul_one := sorry
+  mul_one := by
+    intro a
+    rw [one_bool_def,mul_bool_def]
   -- decide
-  inv_mul_self := sorry
+  inv_mul_self := by
+    intro a
+    rw [inv_bool_def,mul_bool_def,one_bool_def]
+
+
+
+
+#synth BadGroup Bool
+
   -- decide
 
-example : ¬∀ a : Bool, 1 * a = a := by sorry
+example : ¬∀ a : Bool, 1 * a = a := by
+ intro hn
+ simp only [mul_bool_def,one_bool_def] at hn
+ specialize hn Bool.false
+ simp at hn
+
+
+
+
+
+
 -- decide
