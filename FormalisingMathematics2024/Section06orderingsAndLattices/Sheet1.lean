@@ -56,11 +56,20 @@ example (a b c : X) (hab : a ≤ b) (hbc : b ≤ c) : a ≤ c := by
 variable (a b c d : X)
 
 -- See if you can prove these basic facts about partial orders.
-example : a ≤ a := by
-  sorry
+example : a ≤ a := le_refl a
+
 
 example (hab : a ≤ b) (hbc : b ≤ c) (hcd : c ≤ d) : a ≤ d := by
-  sorry
+  trans
+  · exact hab
+  · trans
+    · exact hbc
+    . exact hcd
+
+
+example (hab : a ≤ b) (hbc : b ≤ c) (hcd : c ≤ d) : a ≤ d := (hab.trans hbc).trans hcd
+
 
 example (hab : a ≤ b) (hbc : b ≤ c) (hca : c ≤ a) : a = b := by
-  sorry
+  have := hbc.trans hca
+  exact le_antisymm hab this
