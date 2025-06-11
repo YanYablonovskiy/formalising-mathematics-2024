@@ -84,18 +84,64 @@ variable (L : Type) [Lattice L] (a b c : L)
 example : a ⊔ b = b ⊔ a := by
   -- you might want to start with `apply le_antisymm` (every lattice is a partial order so this is OK)
   -- You'll then have two goals so use `\.` and indent two spaces.
-  sorry
+  apply le_antisymm
+  · apply sup_le
+    · exact le_sup_right (α:=L)
+    · exact le_sup_left
+  · apply sup_le
+    · exact le_sup_right (α:=L)
+    · exact le_sup_left
+
 
 example : a ⊔ b ⊔ c = a ⊔ (b ⊔ c) := by
-  sorry
+  apply le_antisymm
+  · apply sup_le
+    · apply sup_le
+      . exact le_sup_left
+      · have hle1: b ≤ b ⊔ c := by
+          exact le_sup_left (α := L)
+        have hle2: b ⊔ c ≤ a ⊔ (b ⊔ c) := by
+          exact le_sup_right
+        exact hle1.trans hle2
+    · have hle1: c ≤ b ⊔ c := by
+       exact le_sup_right (α := L)
+      have hle2: b ⊔ c ≤ a ⊔ (b ⊔ c) := by
+        exact le_sup_right
+      exact hle1.trans hle2
+  . apply sup_le
+    · have hle1: a ≤ a ⊔ b := by
+       exact le_sup_left (α := L)
+      have hle2: a ⊔ b ≤ (a ⊔ b) ⊔ c := by
+        exact le_sup_left
+      exact hle1.trans hle2
+    · apply sup_le
+      · have hle1: b ≤ a ⊔ b := by
+         exact le_sup_right (α := L)
+        have hle2: a ⊔ b ≤ (a ⊔ b) ⊔ c := by
+         exact le_sup_left
+        exact hle1.trans hle2
+      · exact le_sup_right
+
+
+
 
 -- could golf this entire proof into one (long) line
 -- `a ⊓ _` preserves `≤`.
 -- Note: this is called `inf_le_inf_left a h` in mathlib; see if you can prove it
 -- directly without using this.
 example (h : b ≤ c) : a ⊓ b ≤ a ⊓ c := by
-  sorry
+  have: c ≥ (a ⊓ b) := by
+   have: b ≥ (a ⊓ b) := by
+    exact (inf_le_right (a:=a) (b:=b)).ge
+   have h1 := h.ge
+   exact this.trans h1
+  apply le_inf (a:=a ⊓ b)
+  · exact inf_le_left
+  · exact this.ge
 
+
+
+example (h : b ≤ c) : a ⊓ b ≤ a ⊓ c := le_inf (a:=a ⊓ b) inf_le_left (((inf_le_right (a:=a) (b:=b)).ge).trans (c:=c) h)
 /-
 
 We all know that multiplication "distributes" over addition, i.e. `p*(q+r)=p*q+p*r`,
@@ -109,7 +155,10 @@ do have inclusions though, which is what you can prove in general.
 -/
 -- `inf_le_inf_left`, proved above, is helpful here.
 example : (a ⊓ b) ⊔ (a ⊓ c) ≤ a ⊓ (b ⊔ c) := by
-  sorry
+  apply sup_le
+  · apply le_inf
+    · exact inf_le_left 
+    · sorry
 
 -- use `sup_le_sup_left` for this one.
 example : a ⊔ b ⊓ c ≤ (a ⊔ b) ⊓ (a ⊔ c) := by
