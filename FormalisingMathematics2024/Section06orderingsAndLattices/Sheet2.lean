@@ -148,7 +148,7 @@ We all know that multiplication "distributes" over addition, i.e. `p*(q+r)=p*q+p
 but of course addition does not distribute over multiplication (`p+(q*r)≠(p+q)*(p+r)` in general).
 In sets (rather surprisingly, in my view), ∩ distributes over ∪ and ∪ also
 distributes over ∩! However this is not true in more general lattices. For example,
-if `U`, `V` and `W` are three distinct lines in `ℝ²` then `U ∩ (V + W) = U`
+if `U`, `V` and `W` are three distinct lines in `ℝ²` (v perpendicular?) then `U ∩ (V + W) = U`
 whereas `U ∩ V + U ∩ W = 0`, and `U + (V ∩ W) = U ≠ (U + V) ∩ (U + W) = ℝ²`. We
 do have inclusions though, which is what you can prove in general.
 
@@ -157,12 +157,27 @@ do have inclusions though, which is what you can prove in general.
 example : (a ⊓ b) ⊔ (a ⊓ c) ≤ a ⊓ (b ⊔ c) := by
   apply sup_le
   · apply le_inf
-    · exact inf_le_left 
-    · sorry
+    · exact inf_le_left
+    · have hle := (inf_le_right (a:=a) (b:=b))
+      have hge := (le_sup_left (a:=b) (b:=c))
+      exact hle.trans hge
+  · apply le_inf
+    · exact inf_le_left
+    · have hle := (inf_le_right (a:=a) (b:=c))
+      have hge := (le_sup_right (a:=b) (b:=c))
+      exact hle.trans hge
 
 -- use `sup_le_sup_left` for this one.
 example : a ⊔ b ⊓ c ≤ (a ⊔ b) ⊓ (a ⊔ c) := by
-  sorry
+  apply sup_le
+  · apply le_inf <;> exact le_sup_left (a:=a)
+  · apply le_inf
+    · have hle := (inf_le_left (a:=b) (b:=c))
+      have hge := (le_sup_right (a:=a) (b:=b))
+      exact hle.trans hge
+    · have hle := (inf_le_right (a:=b) (b:=c))
+      have hge := (le_sup_right (a:=a) (b:=c))
+      exact hle.trans hge
 
 -- Bonus question: look up the binding powers of ⊓ and ⊔ (by using crtl-click to jump
 -- to their definitions) and figure out which brackets
