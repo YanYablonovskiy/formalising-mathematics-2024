@@ -22,7 +22,35 @@ and then formalise the proof. If you're not in to puzzles like this, then feel f
 this question.
 
 -/
+open Lattice
+
+lemma sup_self {L: Type} [Lattice L] (a: L): a ⊔ a = a := by
+ simp
+
+#check le_sup_right
 
 example (L : Type) [Lattice L] :
     (∀ a b c : L, a ⊔ b ⊓ c = (a ⊔ b) ⊓ (a ⊔ c)) ↔ ∀ a b c : L, a ⊓ (b ⊔ c) = a ⊓ b ⊔ a ⊓ c := by
+  constructor
+  · intro h a b c
+    have h1:= h (a ⊓ b) a c
+    have h2:= h a a (b ⊔ c)
+    simp only [sup_self] at h1 h2
+    simp [h1,h2]
+    apply le_antisymm
+    · apply le_inf
+      · exact inf_le_left
+      · have ineq1: c ≤ (a ⊓ b) ⊔ c := by
+         apply le_sup_right (a:=(a ⊓ b))
+        sorry
+
+
+    sorry
   sorry
+
+
+
+
+
+
+    --simp only [sup_self] at h

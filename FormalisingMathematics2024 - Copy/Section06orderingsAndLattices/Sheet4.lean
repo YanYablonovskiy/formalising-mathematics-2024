@@ -72,4 +72,8 @@ example : a ≤ ⊥ ↔ a = ⊥ := by
 -- `sSup` is monotone.
 -- this is called sSup_le_sSup
 example (S T : Set L) : S ⊆ T → sSup S ≤ sSup T := by
-  sorry
+  intro hst
+  apply sSup_le
+  intro b hbS
+  specialize hst hbS
+  exact le_sSup hst
