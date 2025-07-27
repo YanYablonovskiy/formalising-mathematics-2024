@@ -44,13 +44,22 @@ example (ha : a ∈ H) (hb : b ∈ H) : a * b ∈ H :=
 -- Let's use these axioms to make more API for subgroups.
 -- First, see if you can put the axioms together to prove subgroups are closed under "division".
 example (ha : a ∈ H) (hb : b ∈ H) : a * b⁻¹ ∈ H := by
-  sorry
+  apply mul_mem
+  · exact ha
+  · exact inv_mem hb
+
+example (ha : a ∈ H) (hb : b ∈ H) : a * b⁻¹ ∈ H := mul_mem ha (inv_mem hb)
 
 -- Now try these. You might want to remind yourself of the API for groups as explained
 -- in an earlier section, or make use of the `group` tactic.
 -- This lemma is called `Subgroup.inv_mem_iff` but try proving it yourself
 example : a⁻¹ ∈ H ↔ a ∈ H := by
-  sorry
+  refine ⟨?_, fun h ↦ inv_mem h⟩
+  intro invH
+  have: (a⁻¹)⁻¹ = a := by
+   group
+  rw [←this]
+  exact inv_mem invH
 
 -- this is `mul_mem_cancel_left` but see if you can do it from the axioms of subgroups.
 -- Again feel free to use the `group` tactic.
