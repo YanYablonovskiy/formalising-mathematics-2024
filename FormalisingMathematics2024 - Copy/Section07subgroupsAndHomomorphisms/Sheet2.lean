@@ -66,14 +66,19 @@ example : G →* K :=
 -- The next three lemmas are pretty standard, but they are also in fact
 -- the axioms that show that groups form a category.
 theorem comp_id : φ.comp (MonoidHom.id G) = φ := by
-  sorry
+  ext g
+  rw [MonoidHom.comp_apply, show (MonoidHom.id G) g = g by rfl]
 
 theorem id_comp : (MonoidHom.id H).comp φ = φ := by
-  sorry
+  ext g
+  rw [MonoidHom.comp_apply]
+  rfl
 
 theorem comp_assoc {L : Type} [Group L] (ρ : K →* L) :
     (ρ.comp ψ).comp φ = ρ.comp (ψ.comp φ) := by
-  sorry
+  ext g
+  rw [MonoidHom.comp_apply,MonoidHom.comp_apply,MonoidHom.comp_apply,MonoidHom.comp_apply]
+
 
 -- The kernel of a group homomorphism `φ` is a subgroup of the source group.
 -- The elements of the kernel are *defined* to be `{x | φ x = 1}`.
