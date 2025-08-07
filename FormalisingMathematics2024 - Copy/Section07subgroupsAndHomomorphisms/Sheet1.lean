@@ -61,10 +61,17 @@ example : a⁻¹ ∈ H ↔ a ∈ H := by
   rw [←this]
   exact inv_mem invH
 
+
+#check mul_left_inv
+
 -- this is `mul_mem_cancel_left` but see if you can do it from the axioms of subgroups.
 -- Again feel free to use the `group` tactic.
 example (ha : a ∈ H) : a * b ∈ H ↔ b ∈ H := by
-  sorry
+  refine ⟨?_, fun h ↦ mul_mem ha h⟩
+  intro hm
+  have := mul_mem (inv_mem ha) hm
+  rw [←mul_assoc,mul_left_inv,one_mul] at this
+  exact this
 
 /-
 
@@ -115,17 +122,42 @@ variable {G H} {x : G}
 
 variable {y z : G}
 
+#check mul_eq_one_iff_eq_inv
+#check mul_inv_cancel_right
+
 theorem conjugate.one_mem : (1 : G) ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹} := by
-  sorry
+  simp
+  use 1
+  apply And.intro (H.one_mem)
+  group
 
 theorem conjugate.inv_mem (hy : y ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹}) :
     y⁻¹ ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹} := by
-  sorry
+  simp
+  obtain ⟨c,⟨hc,hmc⟩⟩ := hy
+  use c⁻¹
+  apply And.intro (H.inv_mem hc)
+  have: y*(x * c⁻¹ * x⁻¹) = 1 := by
+   rw [hmc]
+   group
+  rw [←mul_right_inv y] at this
+  have := mul_left_cancel this
+  exact this.symm
+
+
+
 
 theorem conjugate.mul_mem (hy : y ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹})
     (hz : z ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹}) :
     y * z ∈ {a : G | ∃ h, h ∈ H ∧ a = x * h * x⁻¹} := by
-  sorry
+  simp
+  obtain ⟨c,⟨hc,hmc⟩⟩ := hy
+  obtain ⟨d,⟨hd,hmd⟩⟩ := hz
+  use (c*d)
+  apply And.intro (H.mul_mem hc hd)
+  rw [hmc,hmd]
+  group
+
 
 -- Now here's the way to put everything together:
 def conjugate (H : Subgroup G) (x : G) : Subgroup G
@@ -165,15 +197,45 @@ theorem mem_conjugate_iff : a ∈ conjugate H x ↔ ∃ h, h ∈ H ∧ a = x * h
   rfl
 
 theorem conjugate_mono (H K : Subgroup G) (h : H ≤ K) : conjugate H x ≤ conjugate K x := by
-  sorry
+  intro c hc
+  rw [mem_conjugate_iff] at *
+  obtain ⟨d,⟨hd,hmd⟩⟩ := hc
+  use d
+  exact And.intro (h hd) hmd
+
 
 theorem conjugate_bot : conjugate ⊥ x = ⊥ := by
-  sorry
+  ext g
+  constructor
+  · rw [mem_conjugate_iff]
+    rintro ⟨d,⟨hd,hmd⟩⟩
+    rw [Subgroup.mem_bot] at hd
+    rw [hd] at hmd
+    group at hmd
+    exact Subgroup.mem_bot.mpr hmd
+  · intro hb
+    rw [Subgroup.mem_bot] at hb
+    rw [hb]
+    apply one_mem (conjugate ⊥ x)
+
 
 theorem conjugate_top : conjugate ⊤ x = ⊤ := by
-  sorry
+  ext g
+  rw [mem_conjugate_iff]
+  refine ⟨fun _ ↦ Subgroup.mem_top g , fun hg ↦ ?_ ⟩
+  use (x⁻¹ * g * x)
+  refine ⟨ ?_ , by group⟩
+  exact Subgroup.mem_top (x⁻¹ * g * x)
 
 theorem conjugate_eq_of_abelian (habelian : ∀ a b : G, a * b = b * a) : conjugate H x = H := by
-  sorry
+  ext g
+  rw [mem_conjugate_iff]
+  refine ⟨?_, fun hg ↦ (by use g;refine ⟨hg,?_⟩;rw [habelian x g];group)⟩
+  rintro ⟨d,⟨hd,hmd⟩⟩
+  rw [habelian x d] at hmd
+  group at hmd
+  rw [hmd]
+  exact hd
+
 
 end Section7sheet1
