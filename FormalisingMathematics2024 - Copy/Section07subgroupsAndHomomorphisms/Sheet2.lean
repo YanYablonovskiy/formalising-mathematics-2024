@@ -77,7 +77,7 @@ theorem id_comp : (MonoidHom.id H).comp φ = φ := by
 theorem comp_assoc {L : Type} [Group L] (ρ : K →* L) :
     (ρ.comp ψ).comp φ = ρ.comp (ψ.comp φ) := by
   ext g
-  rw [MonoidHom.comp_apply,MonoidHom.comp_apply,MonoidHom.comp_apply,MonoidHom.comp_apply]
+  simp only [MonoidHom.comp_apply]
 
 
 -- The kernel of a group homomorphism `φ` is a subgroup of the source group.
@@ -113,26 +113,50 @@ example (φ : G →* H) (T : Subgroup H) (x : G) : x ∈ T.comap φ ↔ φ x ∈
 -- Here are some basic facts about these constructions.
 -- Preimage of a subgroup along the identity map is the same subgroup
 example (S : Subgroup G) : S.comap (MonoidHom.id G) = S := by
-  sorry
+  ext g
+  rfl
 
 -- Image of a subgroup along the identity map is the same subgroup
 example (S : Subgroup G) : S.map (MonoidHom.id G) = S := by
-  sorry
+  ext g
+  refine ⟨?_, fun x ↦ by simp [x]⟩
+  intro hi
+  simp at hi
+  assumption
+
 
 -- preimage preserves `≤` (i.e. if `S ≤ T` are subgroups of `H` then `φ⁻¹(S) ≤ φ⁻¹(T)`)
 example (φ : G →* H) (S T : Subgroup H) (hST : S ≤ T) : S.comap φ ≤ T.comap φ := by
-  sorry
+  intro g hg
+  have (g:G)  (φ : G →* H) (T : Subgroup H): g ∈ Subgroup.comap φ T ↔ φ g ∈ T := by rfl
+  rw [this g φ T]
+  rw [this g φ S] at hg
+  exact hST hg
+
+
 
 -- image preserves `≤` (i.e. if `S ≤ T` are subgroups of `G` then `φ(S) ≤ φ(T)`)
 example (φ : G →* H) (S T : Subgroup G) (hST : S ≤ T) : S.map φ ≤ T.map φ := by
-  sorry
+  intro g hg
+  have (k : H) (T : Subgroup G): k ∈ Subgroup.map φ T ↔ ∃ x, x ∈ T ∧ φ x = k := by rfl
+  rw [this g T]
+  rw [this g S] at hg
+  obtain ⟨s,hs,hφx⟩ := hg
+  use s
+  exact ⟨hST hs,hφx⟩
+
+
 
 -- Pulling a subgroup back along one homomorphism and then another, is equal
 -- to pulling it back along the composite of the homomorphisms.
 example (φ : G →* H) (ψ : H →* K) (U : Subgroup K) : U.comap (ψ.comp φ) = (U.comap ψ).comap φ := by
-  sorry
+  ext g
+  have {G:Type} {H:Type} [Group H] [Group G] (g:G)  (φ : G →* H) (T : Subgroup H): g ∈ Subgroup.comap φ T ↔ φ g ∈ T :=
+   by rfl
+  rw [this,this (T:=U.comap ψ),this (φ g),MonoidHom.comp_apply]
+
 
 -- Pushing a subgroup along one homomorphism and then another is equal to
 --  pushing it forward along the composite of the homomorphisms.
 example (φ : G →* H) (ψ : H →* K) (S : Subgroup G) : S.map (ψ.comp φ) = (S.map φ).map ψ := by
-  sorry
+ sorry
