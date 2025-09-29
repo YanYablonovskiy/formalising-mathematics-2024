@@ -69,7 +69,17 @@ There is of course much more API, but if you want to get some practice you can
 just develop some of it yourself from these two functions.
 -/
 example : (mk' N).ker = N := by
-  sorry
+  ext g
+  rw [MonoidHom.mem_ker]
+  constructor
+  · intro hmp
+    exact (eq_one_iff g).mp hmp
+  · intro hgn
+    exact (eq_one_iff g).mpr hgn
+
+example : (mk' N).ker = N := by
+  ext g
+  exact ⟨by rw [MonoidHom.mem_ker]; intro hmp; exact (eq_one_iff g).mp hmp,fun hgn ↦ (eq_one_iff g).mpr hgn⟩
 
 /-
 # Universal properties
@@ -108,12 +118,15 @@ this equality.
 variable {G H φ N}
 variable {P : Subgroup H} [P.Normal]
 
-def ρ (h : N.map φ ≤ P) : G ⧸ N →* H ⧸ P :=
+@[reducible]
+def ρ (h1 : N.map φ ≤ P) : G ⧸ N →* H ⧸ P :=
   lift N ((mk' P).comp φ) (by
     -- we are using `lift` so we need to supply the proof that `(mk' P).comp φ` kills `N`
-    sorry
+    intro k hk
+    simp [MonoidHom.mem_ker,MonoidHom.comp,h k hk,Subgroup.one_mem P]
   )
 
+#check ρ
 -- Now let's prove that `ρ ∘ mk' N = mk' P ∘ φ`
 /-
     G ----φ----> H
@@ -125,7 +138,7 @@ def ρ (h : N.map φ ≤ P) : G ⧸ N →* H ⧸ P :=
   G ⧸ N --ρ--> H ⧸ P
 -/
 
-example (h : N.map φ ≤ P) (x : G) : ρ h (mk' N x) = mk' P (φ x) := by
+example (h1 : N.map φ ≤ P) (x : G) : ρ h h1 (mk' N x) = mk' P (φ x) := by
   -- this proof does my head in
   rfl
 

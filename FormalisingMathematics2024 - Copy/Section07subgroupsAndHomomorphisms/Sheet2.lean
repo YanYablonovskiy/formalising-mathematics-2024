@@ -159,4 +159,16 @@ example (φ : G →* H) (ψ : H →* K) (U : Subgroup K) : U.comap (ψ.comp φ) 
 -- Pushing a subgroup along one homomorphism and then another is equal to
 --  pushing it forward along the composite of the homomorphisms.
 example (φ : G →* H) (ψ : H →* K) (S : Subgroup G) : S.map (ψ.comp φ) = (S.map φ).map ψ := by
- sorry
+ ext g
+ refine ⟨fun ⟨k,hk,hfk⟩ ↦ ?_, fun ⟨k,hk,hfk⟩ ↦ ?_⟩
+ · simp only [Subgroup.mem_map]
+   rw [MonoidHom.comp_apply] at hfk
+   use (φ k)
+   refine ⟨?_, hfk⟩
+   use k
+   exact ⟨hk,by rfl⟩
+ · simp only [Subgroup.mem_map,MonoidHom.comp_apply]
+   obtain ⟨t,hts,hft⟩ := hk
+   use t
+   rw [←hft] at hfk
+   exact ⟨hts,hfk⟩
