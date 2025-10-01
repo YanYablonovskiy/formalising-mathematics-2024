@@ -1,4 +1,4 @@
-/-
+/-ite) -> (S ∪ T).Fin
 Copyright (c) 2023 Kevin Buzzard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Author : Kevin Buzzard
@@ -45,12 +45,13 @@ example (X : Type) (S : Set X) (hS : Set.Finite S) : S = S := by
 example (X : Type) (S : Set X) (hS : S.Finite) : S = S := by
   rfl
 
+#check Set.Finite.union
 -- Lots of proofs about finite sets in this sense live in the `Set.Finite` namespace.
 -- How would you find out the name of the lemma saying that the union of two finite
 -- sets is finite?
 example (X : Type) (S : Set X) (T : Set X) (hs : Set.Finite S) (ht : T.Finite) : (S ∪ T).Finite :=
   by
-  sorry
+  apply?
 
 /-
 But Lean has another way to do finite subsets.
@@ -131,5 +132,14 @@ example (n : ℕ) : ∑ i in Finset.range n, (i : ℚ) ^ 2 = (n : ℚ) * (n - 1)
 -- The up-arrows are "the obvious map from the naturals to the rationals".
 
 -- See if you can can sum the first n cubes.
+
 example (n : ℕ) : ∑ i in Finset.range n, (i : ℚ) ^ 3 = (n : ℚ) ^ 2 * (n - 1) ^ 2 / 4 := by
-  sorry
+  induction n with
+  | zero => simp
+  | succ k ih =>
+    rw [Finset.range_succ,Finset.sum_insert (by simp),ih,←Nat.add_one]
+    field_simp
+    have : (k : ℚ) ^ 3 * 4  + ↑k ^ 2 * (↑k - 1) ^ 2 = ↑k ^ 2 * 4 * k + ↑k ^ 2 * (↑k - 1) ^ 2 := by ring
+    rw [this]
+    calc (k : ℚ) ^ 2 * 4 * ↑k + ↑k ^ 2 * (↑k - 1) ^ 2 = ↑k ^ 2 * (4 * ↑k + (↑k - 1) ^ 2) := by ring
+    _ = (↑k + 1) ^ 2 * ↑k ^ 2 := by ring

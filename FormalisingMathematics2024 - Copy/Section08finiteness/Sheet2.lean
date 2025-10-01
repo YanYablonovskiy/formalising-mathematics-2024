@@ -54,16 +54,30 @@ example (S : Finset X) : Finset Y :=
 example (S : Finset X) : Finset Y :=
   S.image f
 
+--simp only [mem_def, image_val, mem_dedup, Multiset.mem_map, exists_prop]
+
+
 -- See if you can prove these. You'll have to figure out the basic API
 -- for `Finset.image`. These theorems are in the library -- your job is simply to find them.
 example (S : Finset X) (y : Y) : y ∈ S.image f ↔ ∃ x ∈ S, f x = y := by
-  sorry
+  refine ⟨fun h ↦ Finset.mem_image.mp h, fun h ↦ Finset.mem_image.mpr h⟩
 
+open Finset Multiset in
+example (S : Finset X) (y : Y) : y ∈ S.image f ↔ ∃ x ∈ S, f x = y := by
+ simp only [mem_def, image_val, mem_dedup, Multiset.mem_map, exists_prop]
+
+open Finset in
 example (S : Finset X) (x : X) (hx : x ∈ S) : f x ∈ S.image f := by
-  sorry
+  simp only [mem_def,image_val,Multiset.mem_dedup,Multiset.mem_map]
+  use x
+  rw [mem_def] at hx
+  exact ⟨hx,rfl⟩
 
 -- Check that `Finset.image` preserves `≤` (which remember is defined to mean `⊆`)
 -- You might have to prove this one directly, using the stuff you discovered above,
 -- if you can't find it in the library.
 example (S T : Finset X) (h : S ≤ T) : S.image f ≤ T.image f := by
-  sorry
+  intro x hx
+  rw [Finset.mem_image] at *
+  obtain ⟨a,haS,hf⟩ := hx
+  exact ⟨a,h haS,hf⟩

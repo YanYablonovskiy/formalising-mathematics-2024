@@ -79,7 +79,7 @@ open scoped BigOperators
 example : ∑ x : Fin 10, x = 45 := by
   rfl
 
--- Actually I just tricked you. Can you explain this?
+-- Actually I just tricked you. Can you explain this? -- Junk values
 example : ∑ x : Fin 10, x = 25 := by
   rfl
 
