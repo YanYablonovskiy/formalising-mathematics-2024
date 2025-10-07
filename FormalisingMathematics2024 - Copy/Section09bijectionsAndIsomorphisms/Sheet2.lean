@@ -51,15 +51,16 @@ def bijection1 : ℚ ≃ ℚ where
   -- Here's the same proof but in term mode
   right_inv q := rfl
 
+
 -- Now see if you can do a harder one.
 def bijection2 : ℚ ≃ ℚ where
   toFun q := 3 * q + 4
   invFun r := (r - 4) / 3
-  left_inv := by
+  left_inv := fun r ↦ by
     -- start with `intro r`, then use `dsimp` to tidy up the mess
-    sorry
-  right_inv := by
-    sorry
+    simp [mul_div_cancel_left (a := 3) r (by linarith)]
+  right_inv := fun r ↦ by
+    simp [mul_div,mul_div_cancel_left (a := 3) (r - 4) (by linarith)]
 
 -- Note that these two terms are *not* equal.
 example : bijection1 ≠ bijection2 := by

@@ -48,7 +48,23 @@ example : f.Bijective ↔
 -- please ask. There's lots of little Lean tricks which make this
 -- question not too bad, but there are lots of little pitfalls too.
 example : (∃ g : Y → X, f ∘ g = id ∧ g ∘ f = id) → f.Bijective := by
-  sorry
+  rintro ⟨g,hg1,hg2⟩
+  rw [Function.Bijective]
+  apply And.intro
+  · rw [Function.Injective]
+    intro a1 a2 hfa
+    rw [←id_eq a1,←hg2,Function.comp_apply,hfa,←Function.comp_apply (f:=g),hg2,id_eq]
+  · rw [Function.Surjective]
+    intro b
+    use g b
+    rw [←Function.comp_apply (f:=f),hg1,id_eq]
+
+
+
+example : (∃ g : Y → X, f ∘ g = id ∧ g ∘ f = id) → f.Bijective :=
+  fun ⟨g,hg1,hg2⟩ ↦
+  ⟨fun a1 a2 hfa ↦ by rw  [←id_eq a1,←hg2,Function.comp_apply,hfa,←Function.comp_apply (f:=g),hg2,id_eq],
+   fun b ↦ ⟨g b, by rw [←Function.comp_apply (f:=f),hg1,id_eq]⟩⟩
 
 -- The other way is harder in Lean, unless you know about the `choose`
 -- tactic. Given `f` and a proof that it's a bijection, how do you
@@ -56,4 +72,15 @@ example : (∃ g : Y → X, f ∘ g = id ∧ g ∘ f = id) → f.Bijective := by
 -- `g`, and the `choose` tactic does this for you.
 -- If `hfs` is a proof that `f` is surjective, try `choose g hg using hfs`.
 example : f.Bijective → ∃ g : Y → X, f ∘ g = id ∧ g ∘ f = id := by
-  sorry
+  rintro ⟨hbij,hsurj⟩
+  use (fun (y : Y) ↦ (hsurj y).choose)
+  apply And.intro
+  · ext x
+    simp [Exists.choose_spec (_ : ∃ a, f a = x)]
+  · ext x
+    simp [hbij (Exists.choose_spec (_ : ∃ a, f a = f x))]
+
+
+--golfed
+example : f.Bijective → ∃ g : Y → X, f ∘ g = id ∧ g ∘ f = id := fun ⟨hbij,hsurj⟩ ↦
+  ⟨(fun (y : Y) ↦ (hsurj y).choose),⟨funext (fun x ↦ by simp [Exists.choose_spec (_ : ∃ a, f a = x)]),funext (fun x ↦ by simp [hbij (Exists.choose_spec (_ : ∃ a, f a = f x))])⟩⟩
